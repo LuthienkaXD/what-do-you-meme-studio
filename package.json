@@ -1,0 +1,10 @@
+{
+  "name": "what-do-you-meme-studio",
+  "version": "1.0.0",
+  "description": "What Do You Meme - Card Creator & Print Studio",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}
