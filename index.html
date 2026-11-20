@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What Do You Meme? – Kreator Kart i Studio Druku</title>
+  <style>
+    :root {
+      --primary: #e60050;
+      --primary-hover: #c70043;
+      --dark: #121214;
+      --card-bg: #1f1f23;
+      --border: #333339;
+      --text: #efeff1;
+      --text-muted: #adadb8;
+      --accent-18: #d62246;
+      --accent-pl: #0070f3;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      background: #18181b;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo-box h1 {
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      background: #2a2a30;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      background: #383842;
+      border-color: #555;
+    }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-danger {
+      background: #dc3545;
+      border-color: #dc3545;
+      color: #fff;
+    }
+    .btn-danger:hover {
+      background: #bd2130;
+    }
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 0.75rem;
+    }
+
+    /* MAIN LAYOUT */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    /* TABS */
+    .tab-bar {
+      display: flex;
+      gap: 12px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 1px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .badge-count {
+      background: #333;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+    }
+    .tab-btn.active .badge-count {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* CREATOR PANELS */
+    .creator-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 900px) {
+      .creator-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+    }
+    .form-control {
+      width: 100%;
+      background: #121214;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .preview-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #141416;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+    }
+    .preview-title {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* KARTA TEKSTOWA WYMIARY: 7.62cm x 10.16cm (proporcja 3:4) */
+    .card-caption-preview {
+      width: 220px;
+      height: 293.3px; /* 220 * (10.16 / 7.62) = 293.3px */
+      background: #ffffff;
+      color: #111;
+      border-radius: 10px;
+      border: 3px solid #111;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      position: relative;
+      user-select: none;
+    }
+    .card-caption-preview.is-18 {
+      background: #fff8f9;
+      border-color: var(--accent-18);
+    }
+    .card-caption-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 8px;
+      font-weight: 800;
+      color: #777;
+      border-bottom: 1px dashed #ddd;
+      padding-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .tag-badge {
+      background: #eee;
+      color: #333;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 8px;
+      font-weight: 800;
+    }
+    .tag-badge.is-18 {
+      background: var(--accent-18);
+      color: #fff;
+    }
+    .tag-badge.is-pl {
+      background: var(--accent-pl);
+      color: #fff;
+    }
+    .card-caption-text {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.4;
+      text-align: center;
+      margin: auto 0;
+      color: #000;
+    }
+    .card-caption-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #eee;
+      padding-top: 4px;
+      font-size: 7.5px;
+      color: #888;
+      font-weight: 700;
+    }
+
+    /* KARTA MEM WYMIARY: 15.24cm x 10.16cm (proporcja 1.5:1 / 3:2) */
+    .card-meme-preview-container {
+      width: 330px;
+      height: 220px; /* 330 * (10.16 / 15.24) = 220px */
+      background: #000;
+      border-radius: 10px;
+      border: 3px solid #000;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+    }
+    .card-meme-preview-container:active {
+      cursor: grabbing;
+    }
+    .card-meme-img {
+      position: absolute;
+      transform-origin: center center;
+      pointer-events: none;
+      user-select: none;
+      max-width: none;
+      max-height: none;
+    }
+    .card-meme-badge {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      border: 1px solid rgba(255,255,255,0.2);
+      pointer-events: none;
+    }
+
+    /* TRANSFORM CONTROLS */
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .control-row input[type="range"] {
+      flex: 1;
+    }
+
+    /* LIST / GRID VIEW */
+    .items-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .meme-items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .item-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .item-card:hover {
+      border-color: #666;
+      transform: translateY(-2px);
+    }
+    .item-card-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      border-top: 1px solid var(--border);
+      padding-top: 8px;
+    }
+
+    /* PRINT MODAL & HIDDEN PRINT AREA */
+    #print-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* PRINT STYLES - Dedykowany druk arkuszy A4 z dokładnymi wymiarami */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+      body * {
+        visibility: hidden;
+      }
+      #print-sheet-area, #print-sheet-area * {
+        visibility: visible;
+      }
+      #print-sheet-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #fff !important;
+        color: #000 !important;
+      }
+      header, .app-container, #print-modal {
+        display: none !important;
+      }
+
+      /* STRONY DRUKU */
+      .print-page {
+        width: 194mm;
+        height: 281mm;
+        page-break-after: always;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .print-page:last-child {
+        page-break-after: avoid;
+      }
+      .print-header {
+        border-bottom: 2px solid #000;
+        font-size: 8pt;
+        font-weight: 800;
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 2mm;
+        margin-bottom: 4mm;
+      }
+      .print-footer {
+        border-top: 1px dashed #888;
+        font-size: 7.5pt;
+        color: #444;
+        text-align: center;
+        padding-top: 2mm;
+        margin-top: 3mm;
+      }
+
+      /* KARTY Z TEKSTEM: 7.62 cm x 10.16 cm
+         Na A4 wchodzą idealnie 4 karty (układ 2 kolumny x 2 wiersze) z marginesami i ramkami cięcia! */
+      .caption-sheet-grid {
+        display: grid;
+        grid-template-columns: 76.2mm 76.2mm;
+        grid-template-rows: 101.6mm 101.6mm;
+        gap: 8mm;
+        justify-content: center;
+        align-content: center;
+        flex-grow: 1;
+      }
+      .caption-print-card {
+        width: 76.2mm;
+        height: 101.6mm;
+        border: 2px solid #000;
+        border-radius: 4mm;
+        padding: 5mm;
+        background: #fff;
+        color: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-sizing: border-box;
+      }
+      .caption-print-card.is-18 {
+        border: 2.5px solid #d62246;
+      }
+
+      /* KARTY Z MEMAMI: 15.24 cm x 10.16 cm
+         Na A4 wchodzą idealnie 2 karty (1 kolumna x 2 wiersze) z zachowaniem pełnego wymiaru 15.24 x 10.16 cm! */
+      .meme-sheet-grid {
+        display: grid;
+        grid-template-columns: 152.4mm;
+        grid-template-rows: 101.6mm 101.6mm;
+        gap: 8mm;
+        justify-content: center;
+        align-content: center;
+        flex-grow: 1;
+      }
+      .meme-print-card {
+        width: 152.4mm;
+        height: 101.6mm;
+        border: 2px solid #000;
+        border-radius: 4mm;
+        overflow: hidden;
+        position: relative;
+        background: #000;
+        box-sizing: border-box;
+      }
+      .meme-print-card img {
+        position: absolute;
+        transform-origin: center center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-box">
+      <h1>WHAT DO YOU MEME? <span class="logo-badge">Studio Kart</span></h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn" onclick="openResetModal()">🔄 Zresetuj do bazy</button>
+      <button class="btn btn-primary" onclick="openPrintModal()">🖨️ Drukuj / Zapisz do PDF</button>
+    </div>
+  </header>
+
+  <!-- APP CONTENT -->
+  <main class="app-container">
+
+    <!-- TAB NAVIGATION -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-btn-memes" onclick="switchTab('memes')">
+        🖼️ Karty Memów (15,24 × 10,16 cm)
+        <span class="badge-count" id="count-memes">0</span>
+      </button>
+      <button class="tab-btn" id="tab-btn-captions" onclick="switchTab('captions')">
+        💬 Karty Podpisów (7,62 × 10,16 cm)
+        <span class="badge-count" id="count-captions">0</span>
+      </button>
+    </div>
+
+    <!-- ================= TAB 1: KARTY MEMÓW ================= -->
+    <section id="tab-memes">
+      <!-- CREATOR PANEL -->
+      <div class="creator-panel">
+        <div>
+          <h2 style="font-size: 1.1rem; margin-bottom: 12px;">➕ Dodaj / Zaprojektuj Kartę Mema</h2>
+          <div class="form-group">
+            <label>Nazwa mema (opcjonalna):</label>
+            <input type="text" id="meme-input-name" class="form-control" placeholder="np. Mój własny mem">
+          </div>
+          <div class="form-group">
+            <label>Wybierz zdjęcie z dysku (lub wklej URL):</label>
+            <input type="file" id="meme-file-input" class="form-control" accept="image/*" onchange="handleMemeFileUpload(event)">
+          </div>
+
+          <!-- KONTROLKI PRZYBLIŻENIA I OBROTU -->
+          <div style="background: #151518; padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 14px;">
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label>🔍 Przybliżenie (Zoom): <span id="val-zoom">100%</span></label>
+              <div class="control-row">
+                <input type="range" id="meme-zoom" min="0.2" max="3" step="0.05" value="1" oninput="updateMemeTransform()">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label>🔄 Obrót (Kąt): <span id="val-rotate">0°</span></label>
+              <div class="control-row">
+                <button class="btn btn-sm" onclick="rotateMeme(-90)">-90°</button>
+                <input type="range" id="meme-rotate" min="-180" max="180" step="5" value="0" oninput="updateMemeTransform()">
+                <button class="btn btn-sm" onclick="rotateMeme(90)">+90°</button>
+                <button class="btn btn-sm" onclick="resetMemeTransform()">Reset</button>
+              </div>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">
+              💡 <em>Wskazówka: Możesz również chwycić zdjęcie myszką i przesunąć je w oknie podglądu!</em>
+            </p>
+          </div>
+
+          <button class="btn btn-primary" onclick="saveCurrentMeme()">💾 Zapisz mema w bazie</button>
+        </div>
+
+        <!-- PODGLĄD W WYMIARACH 15.24 x 10.16 cm -->
+        <div class="preview-box">
+          <div class="preview-title">Format szablonu: 15,24 × 10,16 cm</div>
+          <div class="card-meme-preview-container" id="meme-preview-box" onmousedown="startDrag(event)">
+            <img id="meme-preview-img" class="card-meme-img" src="" alt="Podgląd" style="display: none;">
+            <div id="meme-empty-placeholder" style="color: #666; font-size: 0.85rem; text-align: center; padding: 20px;">
+              Wybierz zdjęcie, aby rozpocząć kadrowanie
+            </div>
+            <div class="card-meme-badge" id="meme-preview-badge">#NEW MEME</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LISTA MEMÓW -->
+      <div class="items-header">
+        <h3 style="font-size: 1rem;">Baza Kart Memów (<span id="memes-list-count">0</span>)</h3>
+        <input type="text" id="memes-search" class="form-control" style="width: 250px;" placeholder="Szukaj mema..." oninput="renderMemesList()">
+      </div>
+      <div class="meme-items-grid" id="memes-grid"></div>
+    </section>
+
+    <!-- ================= TAB 2: KARTY PODPISÓW ================= -->
+    <section id="tab-captions" style="display: none;">
+      <!-- CREATOR PANEL -->
+      <div class="creator-panel">
+        <div>
+          <h2 style="font-size: 1.1rem; margin-bottom: 12px;">➕ Stwórz Nową Kartę Podpisu</h2>
+          <div class="form-group">
+            <label>Treść podpisu (tekst mema):</label>
+            <textarea id="cap-input-text" class="form-control" placeholder="np. Kiedy wchodzisz do pokoju i zapominasz, po co tu przyszedłeś..." oninput="updateCaptionPreview()"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Kategoria / Etykieta:</label>
+            <select id="cap-input-tag" class="form-control" onchange="updateCaptionPreview()">
+              <option value="Codzienne">Codzienne / Życiowe</option>
+              <option value="Polska">Polska / Swojskie</option>
+              <option value="Rodzinne">Rodzinne / Rodzice</option>
+              <option value="Praca">Praca / Szkoła</option>
+              <option value="18+ Impreza">18+ Impreza & Kac</option>
+              <option value="18+ Pikantne">18+ Randki & Pikantne</option>
+              <option value="18+ Hardcore">18+ Bez cenzury / Czarny humor</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="saveCurrentCaption()">💾 Dodaj do bazy podpisów</button>
+        </div>
+
+        <!-- PODGLĄD W WYMIARACH 7.62 x 10.16 cm -->
+        <div class="preview-box">
+          <div class="preview-title">Format szablonu: 7,62 × 10,16 cm</div>
+          <div class="card-caption-preview" id="cap-preview-box">
+            <div class="card-caption-top">
+              <span>KARTA PODPISU</span>
+              <span class="tag-badge" id="cap-preview-tag">Codzienne</span>
+            </div>
+            <div class="card-caption-text" id="cap-preview-text">
+              „Twój tekst pojawi się tutaj w czasie rzeczywistym...”
+            </div>
+            <div class="card-caption-bottom">
+              <span style="font-weight: 900;">WHAT DO YOU MEME?</span>
+              <span>#PODGLĄD</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LISTA PODPISÓW -->
+      <div class="items-header">
+        <h3 style="font-size: 1rem;">Baza Kart Podpisów (<span id="captions-list-count">0</span>)</h3>
+        <input type="text" id="captions-search" class="form-control" style="width: 250px;" placeholder="Szukaj podpisu..." oninput="renderCaptionsList()">
+      </div>
+      <div class="items-grid" id="captions-grid"></div>
+    </section>
+
+  </main>
+
+  <!-- PRINT OPTIONS MODAL -->
+  <div id="print-modal">
+    <div class="modal-content">
+      <h2 style="font-size: 1.2rem;">🖨️ Drukuj / Eksportuj do PDF</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        Wybierz, które karty chcesz przygotować do druku na arkuszach A4. System zachowa precyzyjne proporcje:
+      </p>
+      <div style="background: #141416; border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 0.85rem;">
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+          <input type="checkbox" id="print-opt-memes" checked>
+          <strong>Karty Memów (15,24 × 10,16 cm)</strong> – układ 2 karty na stronę A4
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="checkbox" id="print-opt-captions" checked>
+          <strong>Karty Podpisów (7,62 × 10,16 cm)</strong> – układ 4 karty na stronę A4
+        </label>
+      </div>
+
+      <div style="font-size: 0.75rem; color: #aaa; line-height: 1.4;">
+        💡 <strong>Wskazówka:</strong> Po kliknięciu „Generuj wydruk” otworzy się okno drukowania przeglądarki. W polu <em>Miejsce docelowe</em> wybierz <strong>„Zapisz jako PDF”</strong> lub bezpośrednio swoją drukarkę. Ustaw marginesy na „Brak” lub „Domyślne”.
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button class="btn" onclick="closePrintModal()">Anuluj</button>
+        <button class="btn btn-primary" onclick="executePrint()">🖨️ Generuj wydruk (Drukuj / PDF)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UKRYTY KONTENER DO GENEROWANIA ARKUSZY A4 DLA WINDOW.PRINT() -->
+  <div id="print-sheet-area"></div>
+
+  <!-- ŁADOWANIE BAZY POCZĄTKOWEJ -->
+  <script src="initial_data.js"></script>
+
+  <!-- LOGIKA APLIKACJI -->
+  <script>
+    // STORAGE KEY
+    const STORAGE_KEY = 'what_do_you_meme_db_v1';
+
+    // STAN BAZY DANYCH
+    let db = {
+      memes: [],
+      captions: []
+    };
+
+    // Ładowanie z LocalStorage lub initial_data.js
+    function initDatabase() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          db = JSON.parse(saved);
+        } catch (e) {
+          console.error('Błąd parsowania bazy:', e);
+          db = INITIAL_DATA;
+        }
+      } else if (typeof INITIAL_DATA !== 'undefined') {
+        db = INITIAL_DATA;
+      }
+      saveToStorage();
+      updateCounts();
+      renderMemesList();
+      renderCaptionsList();
+    }
+
+    function saveToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+      } catch (e) {
+        console.warn('LocalStorage limit przekroczony (dużo zdjęć base64), działanie w RAM');
+      }
+      updateCounts();
+    }
+
+    function updateCounts() {
+      document.getElementById('count-memes').innerText = db.memes.length;
+      document.getElementById('count-captions').innerText = db.captions.length;
+      document.getElementById('memes-list-count').innerText = db.memes.length;
+      document.getElementById('captions-list-count').innerText = db.captions.length;
+    }
+
+    // PRZEŁĄCZANIE ZAKŁADEK
+    function switchTab(tab) {
+      document.getElementById('tab-memes').style.display = tab === 'memes' ? 'block' : 'none';
+      document.getElementById('tab-captions').style.display = tab === 'captions' ? 'block' : 'none';
+      document.getElementById('tab-btn-memes').classList.toggle('active', tab === 'memes');
+      document.getElementById('tab-btn-captions').classList.toggle('active', tab === 'captions');
+    }
+
+    // ==========================================
+    // KREATOR MEMÓW (TRANSFORMACJE: ZOOM, OBRÓT, PAN)
+    // ==========================================
+    let currentMemeState = {
+      dataUrl: null,
+      name: '',
+      scale: 1,
+      rotate: 0,
+      offsetX: 0,
+      offsetY: 0
+    };
+
+    let isDragging = false;
+    let startX = 0, startY = 0;
+
+    function handleMemeFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        currentMemeState.dataUrl = evt.target.result;
+        currentMemeState.name = file.name.replace(/\.[^/.]+$/, "");
+        document.getElementById('meme-input-name').value = currentMemeState.name;
+        resetMemeTransform();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateMemeTransform() {
+      const zoom = parseFloat(document.getElementById('meme-zoom').value);
+      const rotate = parseInt(document.getElementById('meme-rotate').value);
+
+      currentMemeState.scale = zoom;
+      currentMemeState.rotate = rotate;
+
+      document.getElementById('val-zoom').innerText = Math.round(zoom * 100) + '%';
+      document.getElementById('val-rotate').innerText = rotate + '°';
+
+      applyMemeTransform();
+    }
+
+    function rotateMeme(delta) {
+      let r = (currentMemeState.rotate + delta) % 360;
+      if (r > 180) r -= 360;
+      if (r < -180) r += 360;
+      document.getElementById('meme-rotate').value = r;
+      updateMemeTransform();
+    }
+
+    function resetMemeTransform() {
+      currentMemeState.scale = 1;
+      currentMemeState.rotate = 0;
+      currentMemeState.offsetX = 0;
+      currentMemeState.offsetY = 0;
+      document.getElementById('meme-zoom').value = 1;
+      document.getElementById('meme-rotate').value = 0;
+      document.getElementById('val-zoom').innerText = '100%';
+      document.getElementById('val-rotate').innerText = '0°';
+      applyMemeTransform();
+    }
+
+    function applyMemeTransform() {
+      const img = document.getElementById('meme-preview-img');
+      const placeholder = document.getElementById('meme-empty-placeholder');
+      if (currentMemeState.dataUrl) {
+        img.src = currentMemeState.dataUrl;
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+        img.style.transform = `translate(${currentMemeState.offsetX}px, ${currentMemeState.offsetY}px) rotate(${currentMemeState.rotate}deg) scale(${currentMemeState.scale})`;
+      } else {
+        img.style.display = 'none';
+        placeholder.style.display = 'block';
+      }
+    }
+
+    // PRZECIĄGANIE ZDJĘCIA MYSZKĄ (PANNING)
+    function startDrag(e) {
+      if (!currentMemeState.dataUrl) return;
+      isDragging = true;
+      startX = e.clientX - currentMemeState.offsetX;
+      startY = e.clientY - currentMemeState.offsetY;
+      window.addEventListener('mousemove', onDrag);
+      window.addEventListener('mouseup', stopDrag);
+    }
+
+    function onDrag(e) {
+      if (!isDragging) return;
+      currentMemeState.offsetX = e.clientX - startX;
+      currentMemeState.offsetY = e.clientY - startY;
+      applyMemeTransform();
+    }
+
+    function stopDrag() {
+      isDragging = false;
+      window.removeEventListener('mousemove', onDrag);
+      window.removeEventListener('mouseup', stopDrag);
+    }
+
+    function saveCurrentMeme() {
+      if (!currentMemeState.dataUrl) {
+        alert('Proszę najpierw wgrać zdjęcie mema!');
+        return;
+      }
+      const name = document.getElementById('meme-input-name').value.trim() || 'Bez nazwy';
+      const newMeme = {
+        id: 'meme_' + Date.now(),
+        name: name,
+        dataUrl: currentMemeState.dataUrl,
+        scale: currentMemeState.scale,
+        rotate: currentMemeState.rotate,
+        offsetX: currentMemeState.offsetX,
+        offsetY: currentMemeState.offsetY
+      };
+
+      db.memes.unshift(newMeme);
+      saveToStorage();
+      renderMemesList();
+
+      alert(`Dodano pomyślnie mema: „${name}”!`);
+      // Reset formularza
+      document.getElementById('meme-input-name').value = '';
+      document.getElementById('meme-file-input').value = '';
+      currentMemeState.dataUrl = null;
+      resetMemeTransform();
+    }
+
+    function deleteMeme(id) {
+      if (confirm('Czy na pewno chcesz usunąć tego mema z bazy?')) {
+        db.memes = db.memes.filter(m => m.id !== id);
+        saveToStorage();
+        renderMemesList();
+      }
+    }
+
+    function renderMemesList() {
+      const grid = document.getElementById('memes-grid');
+      const search = (document.getElementById('memes-search').value || '').toLowerCase();
+      const filtered = db.memes.filter(m => m.name.toLowerCase().includes(search));
+
+      grid.innerHTML = filtered.map(m => `
+        <div class="item-card">
+          <div style="width: 100%; height: 160px; background: #000; border-radius: 6px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;">
+            <img src="${m.dataUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain; transform: rotate(${m.rotate || 0}deg) scale(${m.scale || 1});" alt="${m.name}">
+          </div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            ${m.name}
+          </div>
+          <div class="item-card-actions">
+            <button class="btn btn-sm btn-danger" onclick="deleteMeme('${m.id}')">Usuń</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ==========================================
+    // KREATOR PODPISÓW
+    // ==========================================
+    function updateCaptionPreview() {
+      const text = document.getElementById('cap-input-text').value.trim() || 'Twój tekst pojawi się tutaj w czasie rzeczywistym...';
+      const tag = document.getElementById('cap-input-tag').value;
+
+      const previewBox = document.getElementById('cap-preview-box');
+      const previewText = document.getElementById('cap-preview-text');
+      const previewTag = document.getElementById('cap-preview-tag');
+
+      const is18 = tag.includes('18+') || tag.includes('Hardcore') || tag.includes('Pikantne');
+      const isPL = tag.includes('Polska');
+
+      previewText.innerText = `„${text}”`;
+      previewTag.innerText = tag;
+
+      previewBox.className = 'card-caption-preview' + (is18 ? ' is-18' : '');
+      previewTag.className = 'tag-badge' + (is18 ? ' is-18' : (isPL ? ' is-pl' : ''));
+    }
+
+    function saveCurrentCaption() {
+      const text = document.getElementById('cap-input-text').value.trim();
+      const tag = document.getElementById('cap-input-tag').value;
+
+      if (!text) {
+        alert('Podaj treść podpisu!');
+        return;
+      }
+
+      const newCap = {
+        id: 'cap_' + Date.now(),
+        text: text,
+        tag: tag
+      };
+
+      db.captions.unshift(newCap);
+      saveToStorage();
+      renderCaptionsList();
+
+      alert('Dodano nową kartę podpisu!');
+      document.getElementById('cap-input-text').value = '';
+      updateCaptionPreview();
+    }
+
+    function deleteCaption(id) {
+      if (confirm('Czy usunąć ten podpis?')) {
+        db.captions = db.captions.filter(c => c.id !== id);
+        saveToStorage();
+        renderCaptionsList();
+      }
+    }
+
+    function renderCaptionsList() {
+      const grid = document.getElementById('captions-grid');
+      const search = (document.getElementById('captions-search').value || '').toLowerCase();
+      const filtered = db.captions.filter(c => c.text.toLowerCase().includes(search) || c.tag.toLowerCase().includes(search));
+
+      grid.innerHTML = filtered.map(c => {
+        const is18 = c.tag.includes('18+') || c.tag.includes('Hardcore') || c.tag.includes('Pikantne');
+        const isPL = c.tag.includes('Polska');
+        return `
+          <div class="item-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="tag-badge ${is18 ? 'is-18' : (isPL ? 'is-pl' : '')}">${c.tag}</span>
+            </div>
+            <div style="font-size: 0.9rem; font-weight: 700; color: #fff; line-height: 1.35; min-height: 55px;">
+              „${c.text}”
+            </div>
+            <div class="item-card-actions">
+              <button class="btn btn-sm btn-danger" onclick="deleteCaption('${c.id}')">Usuń</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==========================================
+    // RESET BAZY
+    // ==========================================
+    function openResetModal() {
+      if (confirm('Czy chcesz przywrócić domyślną bazę (60 memów i 120 podpisów)? Twoje własne dodane karty zostaną zresetowane.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        db = INITIAL_DATA;
+        saveToStorage();
+        renderMemesList();
+        renderCaptionsList();
+        alert('Przywrócono bazę fabryczną!');
+      }
+    }
+
+    // ==========================================
+    // MODAL I GENEROWANIE WYDRUKU PDF (A4)
+    // ==========================================
+    function openPrintModal() {
+      document.getElementById('print-modal').style.display = 'flex';
+    }
+    function closePrintModal() {
+      document.getElementById('print-modal').style.display = 'none';
+    }
+
+    function chunkArray(arr, size) {
+      const res = [];
+      for (let i = 0; i < arr.length; i += size) res.push(arr.slice(i, i + size));
+      return res;
+    }
+
+    function executePrint() {
+      const printMemes = document.getElementById('print-opt-memes').checked;
+      const printCaptions = document.getElementById('print-opt-captions').checked;
+
+      if (!printMemes && !printCaptions) {
+        alert('Wybierz przynajmniej jeden rodzaj kart do druku!');
+        return;
+      }
+
+      closePrintModal();
+
+      const printArea = document.getElementById('print-sheet-area');
+      printArea.innerHTML = '';
+
+      let html = '';
+
+      // 1. GENEROWANIE ARKUSZY MEMÓW: 15.24 x 10.16 cm
+      // Na arkusz A4 w pionie mieszczą się idealnie 2 karty (układ 1x2)
+      if (printMemes && db.memes.length > 0) {
+        const memeChunks = chunkArray(db.memes, 2);
+        memeChunks.forEach((chunk, pageIdx) => {
+          html += `
+            <div class="print-page">
+              <div class="print-header">
+                <span>WHAT DO YOU MEME? – KARTY MEMÓW (15,24 × 10,16 CM)</span>
+                <span>ARKUSZ ${pageIdx + 1} / ${memeChunks.length}</span>
+              </div>
+              <div class="meme-sheet-grid">
+          `;
+          chunk.forEach(m => {
+            html += `
+              <div class="meme-print-card">
+                <img src="${m.dataUrl}" style="width: 100%; height: 100%; object-fit: cover; transform: translate(${m.offsetX || 0}px, ${m.offsetY || 0}px) rotate(${m.rotate || 0}deg) scale(${m.scale || 1});" alt="${m.name}">
+              </div>
+            `;
+          });
+          html += `
+              </div>
+              <div class="print-footer">
+                Wymiary karty po wycięciu: 15,24 cm × 10,16 cm (oryginalny format What Do You Meme).
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // 2. GENEROWANIE ARKUSZY PODPISÓW: 7.62 x 10.16 cm
+      // Na arkusz A4 w pionie mieszczą się idealnie 4 karty (układ 2x2: 2 * 7.62 = 15.24 cm szer., 2 * 10.16 = 20.32 cm wys.)
+      if (printCaptions && db.captions.length > 0) {
+        const capChunks = chunkArray(db.captions, 4);
+        capChunks.forEach((chunk, pageIdx) => {
+          html += `
+            <div class="print-page">
+              <div class="print-header">
+                <span>WHAT DO YOU MEME? – KARTY PODPISÓW (7,62 × 10,16 CM)</span>
+                <span>ARKUSZ ${pageIdx + 1} / ${capChunks.length}</span>
+              </div>
+              <div class="caption-sheet-grid">
+          `;
+          chunk.forEach(c => {
+            const is18 = c.tag.includes('18+') || c.tag.includes('Hardcore') || c.tag.includes('Pikantne');
+            html += `
+              <div class="caption-print-card ${is18 ? 'is-18' : ''}">
+                <div style="display:flex; justify-content:space-between; font-size:7pt; font-weight:800; border-bottom:1px dashed #ccc; padding-bottom:2mm;">
+                  <span>KARTA PODPISU</span>
+                  <span>${c.tag}</span>
+                </div>
+                <div style="font-size:12pt; font-weight:800; line-height:1.4; text-align:center; padding: 4mm 0;">
+                  „${c.text}”
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:6.5pt; font-weight:700; border-top:1px solid #eee; padding-top:2mm; color:#666;">
+                  <span style="color:#000; font-weight:900;">WHAT DO YOU MEME?</span>
+                  <span>#CARD</span>
+                </div>
+              </div>
+            `;
+          });
+          html += `
+              </div>
+              <div class="print-footer">
+                Wymiary karty po wycięciu: 7,62 cm × 10,16 cm (oryginalny format What Do You Meme).
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      printArea.innerHTML = html;
+
+      // Wywołanie drukowania po załadowaniu zasobów
+      setTimeout(() => {
+        window.print();
+      }, 350);
+    }
+
+    // INICJALIZACJA PRZY STARCIE
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabase();
+      updateCaptionPreview();
+    });
+  </script>
+</body>
+</html>
