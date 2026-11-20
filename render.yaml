@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: what-do-you-meme-studio
+    env: node
+    plan: free
+    buildCommand: ""
+    startCommand: "node server.js"
