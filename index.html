@@ -93,6 +93,14 @@
     .btn-primary:hover {
       background: var(--primary-hover);
     }
+    .btn-warning {
+      background: #ff9800;
+      border-color: #ff9800;
+      color: #000;
+    }
+    .btn-warning:hover {
+      background: #e68900;
+    }
     .btn-danger {
       background: #dc3545;
       border-color: #dc3545;
@@ -164,6 +172,23 @@
       grid-template-columns: 1fr 1fr;
       gap: 24px;
       margin-bottom: 20px;
+      position: relative;
+    }
+    .creator-panel.editing-mode {
+      border: 2px solid #ff9800;
+      background: #25221b;
+    }
+    .edit-banner {
+      display: none;
+      background: #ff9800;
+      color: #000;
+      font-size: 0.8rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      align-items: center;
+      justify-content: space-between;
     }
     @media (max-width: 900px) {
       .creator-panel {
@@ -225,7 +250,7 @@
     /* KARTA TEKSTOWA WYMIARY: 7.62cm x 10.16cm (proporcja 3:4) */
     .card-caption-preview {
       width: 220px;
-      height: 293.3px; /* 220 * (10.16 / 7.62) = 293.3px */
+      height: 293.3px;
       background: #ffffff;
       color: #111;
       border-radius: 10px;
@@ -291,7 +316,7 @@
     /* KARTA MEM WYMIARY: 15.24cm x 10.16cm (proporcja 1.5:1 / 3:2) */
     .card-meme-preview-container {
       width: 330px;
-      height: 220px; /* 330 * (10.16 / 15.24) = 220px */
+      height: 220px;
       background: #000;
       border-radius: 10px;
       border: 3px solid #000;
@@ -431,7 +456,6 @@
         display: none !important;
       }
 
-      /* STRONY DRUKU */
       .print-page {
         width: 194mm;
         height: 281mm;
@@ -463,8 +487,6 @@
         margin-top: 3mm;
       }
 
-      /* KARTY Z TEKSTEM: 7.62 cm x 10.16 cm
-         Na A4 wchodzą idealnie 4 karty (układ 2 kolumny x 2 wiersze) z marginesami i ramkami cięcia! */
       .caption-sheet-grid {
         display: grid;
         grid-template-columns: 76.2mm 76.2mm;
@@ -491,8 +513,6 @@
         border: 2.5px solid #d62246;
       }
 
-      /* KARTY Z MEMAMI: 15.24 cm x 10.16 cm
-         Na A4 wchodzą idealnie 2 karty (1 kolumna x 2 wiersze) z zachowaniem pełnego wymiaru 15.24 x 10.16 cm! */
       .meme-sheet-grid {
         display: grid;
         grid-template-columns: 152.4mm;
@@ -549,16 +569,21 @@
 
     <!-- ================= TAB 1: KARTY MEMÓW ================= -->
     <section id="tab-memes">
-      <!-- CREATOR PANEL -->
-      <div class="creator-panel">
+      <!-- CREATOR / EDITOR PANEL -->
+      <div class="creator-panel" id="meme-creator-panel">
         <div>
-          <h2 style="font-size: 1.1rem; margin-bottom: 12px;">➕ Dodaj / Zaprojektuj Kartę Mema</h2>
+          <div class="edit-banner" id="meme-edit-banner">
+            <span>✏️ TRYB EDYCJI MEMA: <strong id="meme-editing-name-label"></strong></span>
+            <button class="btn btn-sm" onclick="cancelMemeEdit()">Anuluj edycję</button>
+          </div>
+
+          <h2 style="font-size: 1.1rem; margin-bottom: 12px;" id="meme-form-title">➕ Dodaj / Zaprojektuj Kartę Mema</h2>
           <div class="form-group">
-            <label>Nazwa mema (opcjonalna):</label>
+            <label>Nazwa mema:</label>
             <input type="text" id="meme-input-name" class="form-control" placeholder="np. Mój własny mem">
           </div>
           <div class="form-group">
-            <label>Wybierz zdjęcie z dysku (lub wklej URL):</label>
+            <label>Zmień / wybierz zdjęcie z dysku:</label>
             <input type="file" id="meme-file-input" class="form-control" accept="image/*" onchange="handleMemeFileUpload(event)">
           </div>
 
@@ -584,7 +609,10 @@
             </p>
           </div>
 
-          <button class="btn btn-primary" onclick="saveCurrentMeme()">💾 Zapisz mema w bazie</button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" id="btn-save-meme" onclick="saveCurrentMeme()">💾 Zapisz mema w bazie</button>
+            <button class="btn" id="btn-cancel-meme" style="display: none;" onclick="cancelMemeEdit()">Anuluj</button>
+          </div>
         </div>
 
         <!-- PODGLĄD W WYMIARACH 15.24 x 10.16 cm -->
@@ -595,7 +623,7 @@
             <div id="meme-empty-placeholder" style="color: #666; font-size: 0.85rem; text-align: center; padding: 20px;">
               Wybierz zdjęcie, aby rozpocząć kadrowanie
             </div>
-            <div class="card-meme-badge" id="meme-preview-badge">#NEW MEME</div>
+            <div class="card-meme-badge" id="meme-preview-badge">#MEME</div>
           </div>
         </div>
       </div>
@@ -610,10 +638,15 @@
 
     <!-- ================= TAB 2: KARTY PODPISÓW ================= -->
     <section id="tab-captions" style="display: none;">
-      <!-- CREATOR PANEL -->
-      <div class="creator-panel">
+      <!-- CREATOR / EDITOR PANEL -->
+      <div class="creator-panel" id="caption-creator-panel">
         <div>
-          <h2 style="font-size: 1.1rem; margin-bottom: 12px;">➕ Stwórz Nową Kartę Podpisu</h2>
+          <div class="edit-banner" id="caption-edit-banner">
+            <span>✏️ TRYB EDYCJI PODPISU</span>
+            <button class="btn btn-sm" onclick="cancelCaptionEdit()">Anuluj edycję</button>
+          </div>
+
+          <h2 style="font-size: 1.1rem; margin-bottom: 12px;" id="cap-form-title">➕ Stwórz Nową Kartę Podpisu</h2>
           <div class="form-group">
             <label>Treść podpisu (tekst mema):</label>
             <textarea id="cap-input-text" class="form-control" placeholder="np. Kiedy wchodzisz do pokoju i zapominasz, po co tu przyszedłeś..." oninput="updateCaptionPreview()"></textarea>
@@ -630,7 +663,10 @@
               <option value="18+ Hardcore">18+ Bez cenzury / Czarny humor</option>
             </select>
           </div>
-          <button class="btn btn-primary" onclick="saveCurrentCaption()">💾 Dodaj do bazy podpisów</button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" id="btn-save-cap" onclick="saveCurrentCaption()">💾 Dodaj do bazy podpisów</button>
+            <button class="btn" id="btn-cancel-cap" style="display: none;" onclick="cancelCaptionEdit()">Anuluj</button>
+          </div>
         </div>
 
         <!-- PODGLĄD W WYMIARACH 7.62 x 10.16 cm -->
@@ -646,7 +682,7 @@
             </div>
             <div class="card-caption-bottom">
               <span style="font-weight: 900;">WHAT DO YOU MEME?</span>
-              <span>#PODGLĄD</span>
+              <span id="cap-preview-number">#PODGLĄD</span>
             </div>
           </div>
         </div>
@@ -699,16 +735,17 @@
 
   <!-- LOGIKA APLIKACJI -->
   <script>
-    // STORAGE KEY
     const STORAGE_KEY = 'what_do_you_meme_db_v1';
 
-    // STAN BAZY DANYCH
     let db = {
       memes: [],
       captions: []
     };
 
-    // Ładowanie z LocalStorage lub initial_data.js
+    // ID edytowanych elementów (null = tryb tworzenia)
+    let editingMemeId = null;
+    let editingCaptionId = null;
+
     function initDatabase() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -743,7 +780,6 @@
       document.getElementById('captions-list-count').innerText = db.captions.length;
     }
 
-    // PRZEŁĄCZANIE ZAKŁADEK
     function switchTab(tab) {
       document.getElementById('tab-memes').style.display = tab === 'memes' ? 'block' : 'none';
       document.getElementById('tab-captions').style.display = tab === 'captions' ? 'block' : 'none';
@@ -752,7 +788,7 @@
     }
 
     // ==========================================
-    // KREATOR MEMÓW (TRANSFORMACJE: ZOOM, OBRÓT, PAN)
+    // KREATOR / EDYTOR MEMÓW
     // ==========================================
     let currentMemeState = {
       dataUrl: null,
@@ -772,8 +808,10 @@
       const reader = new FileReader();
       reader.onload = function(evt) {
         currentMemeState.dataUrl = evt.target.result;
-        currentMemeState.name = file.name.replace(/\.[^/.]+$/, "");
-        document.getElementById('meme-input-name').value = currentMemeState.name;
+        if (!editingMemeId) {
+          currentMemeState.name = file.name.replace(/\.[^/.]+$/, "");
+          document.getElementById('meme-input-name').value = currentMemeState.name;
+        }
         resetMemeTransform();
       };
       reader.readAsDataURL(file);
@@ -826,7 +864,6 @@
       }
     }
 
-    // PRZECIĄGANIE ZDJĘCIA MYSZKĄ (PANNING)
     function startDrag(e) {
       if (!currentMemeState.dataUrl) return;
       isDragging = true;
@@ -849,36 +886,106 @@
       window.removeEventListener('mouseup', stopDrag);
     }
 
-    function saveCurrentMeme() {
-      if (!currentMemeState.dataUrl) {
-        alert('Proszę najpierw wgrać zdjęcie mema!');
-        return;
-      }
-      const name = document.getElementById('meme-input-name').value.trim() || 'Bez nazwy';
-      const newMeme = {
-        id: 'meme_' + Date.now(),
-        name: name,
-        dataUrl: currentMemeState.dataUrl,
-        scale: currentMemeState.scale,
-        rotate: currentMemeState.rotate,
-        offsetX: currentMemeState.offsetX,
-        offsetY: currentMemeState.offsetY
-      };
+    // ROZPOCZĘCIE EDYCJI MEMA
+    function startEditMeme(id) {
+      const meme = db.memes.find(m => m.id === id);
+      if (!meme) return;
 
-      db.memes.unshift(newMeme);
-      saveToStorage();
-      renderMemesList();
+      editingMemeId = id;
+      currentMemeState.dataUrl = meme.dataUrl;
+      currentMemeState.name = meme.name;
+      currentMemeState.scale = meme.scale || 1;
+      currentMemeState.rotate = meme.rotate || 0;
+      currentMemeState.offsetX = meme.offsetX || 0;
+      currentMemeState.offsetY = meme.offsetY || 0;
 
-      alert(`Dodano pomyślnie mema: „${name}”!`);
-      // Reset formularza
+      // Wypełnienie formularza
+      document.getElementById('meme-input-name').value = meme.name;
+      document.getElementById('meme-zoom').value = currentMemeState.scale;
+      document.getElementById('meme-rotate').value = currentMemeState.rotate;
+      document.getElementById('val-zoom').innerText = Math.round(currentMemeState.scale * 100) + '%';
+      document.getElementById('val-rotate').innerText = currentMemeState.rotate + '°';
+      document.getElementById('meme-preview-badge').innerText = meme.name.toUpperCase();
+
+      // UI edycji
+      document.getElementById('meme-creator-panel').classList.add('editing-mode');
+      document.getElementById('meme-edit-banner').style.display = 'flex';
+      document.getElementById('meme-editing-name-label').innerText = meme.name;
+      document.getElementById('meme-form-title').innerText = '✏️ Edytuj Wybranego Mema';
+      document.getElementById('btn-save-meme').innerText = '💾 Zaktualizuj mema w bazie';
+      document.getElementById('btn-save-meme').className = 'btn btn-warning';
+      document.getElementById('btn-cancel-meme').style.display = 'inline-flex';
+
+      applyMemeTransform();
+
+      // Przewiń do góry do panelu edycji
+      document.getElementById('meme-creator-panel').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelMemeEdit() {
+      editingMemeId = null;
+      document.getElementById('meme-creator-panel').classList.remove('editing-mode');
+      document.getElementById('meme-edit-banner').style.display = 'none';
+      document.getElementById('meme-form-title').innerText = '➕ Dodaj / Zaprojektuj Kartę Mema';
+      document.getElementById('btn-save-meme').innerText = '💾 Zapisz mema w bazie';
+      document.getElementById('btn-save-meme').className = 'btn btn-primary';
+      document.getElementById('btn-cancel-meme').style.display = 'none';
+
       document.getElementById('meme-input-name').value = '';
       document.getElementById('meme-file-input').value = '';
       currentMemeState.dataUrl = null;
       resetMemeTransform();
     }
 
+    function saveCurrentMeme() {
+      if (!currentMemeState.dataUrl) {
+        alert('Proszę najpierw wgrać zdjęcie mema!');
+        return;
+      }
+      const name = document.getElementById('meme-input-name').value.trim() || 'Bez nazwy';
+
+      if (editingMemeId) {
+        // AKTUALIZACJA ISTNIEJĄCEGO MEMA
+        const index = db.memes.findIndex(m => m.id === editingMemeId);
+        if (index !== -1) {
+          db.memes[index] = {
+            ...db.memes[index],
+            name: name,
+            dataUrl: currentMemeState.dataUrl,
+            scale: currentMemeState.scale,
+            rotate: currentMemeState.rotate,
+            offsetX: currentMemeState.offsetX,
+            offsetY: currentMemeState.offsetY
+          };
+          saveToStorage();
+          renderMemesList();
+          alert(`Zaktualizowano mema: „${name}”!`);
+          cancelMemeEdit();
+        }
+      } else {
+        // NOWY MEM
+        const newMeme = {
+          id: 'meme_' + Date.now(),
+          name: name,
+          dataUrl: currentMemeState.dataUrl,
+          scale: currentMemeState.scale,
+          rotate: currentMemeState.rotate,
+          offsetX: currentMemeState.offsetX,
+          offsetY: currentMemeState.offsetY
+        };
+
+        db.memes.unshift(newMeme);
+        saveToStorage();
+        renderMemesList();
+
+        alert(`Dodano pomyślnie mema: „${name}”!`);
+        cancelMemeEdit();
+      }
+    }
+
     function deleteMeme(id) {
       if (confirm('Czy na pewno chcesz usunąć tego mema z bazy?')) {
+        if (editingMemeId === id) cancelMemeEdit();
         db.memes = db.memes.filter(m => m.id !== id);
         saveToStorage();
         renderMemesList();
@@ -891,14 +998,15 @@
       const filtered = db.memes.filter(m => m.name.toLowerCase().includes(search));
 
       grid.innerHTML = filtered.map(m => `
-        <div class="item-card">
+        <div class="item-card ${editingMemeId === m.id ? 'is-editing' : ''}">
           <div style="width: 100%; height: 160px; background: #000; border-radius: 6px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;">
-            <img src="${m.dataUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain; transform: rotate(${m.rotate || 0}deg) scale(${m.scale || 1});" alt="${m.name}">
+            <img src="${m.dataUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain; transform: translate(${m.offsetX || 0}px, ${m.offsetY || 0}px) rotate(${m.rotate || 0}deg) scale(${m.scale || 1});" alt="${m.name}">
           </div>
           <div style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             ${m.name}
           </div>
           <div class="item-card-actions">
+            <button class="btn btn-sm btn-warning" onclick="startEditMeme('${m.id}')">✏️ Edytuj</button>
             <button class="btn btn-sm btn-danger" onclick="deleteMeme('${m.id}')">Usuń</button>
           </div>
         </div>
@@ -906,7 +1014,7 @@
     }
 
     // ==========================================
-    // KREATOR PODPISÓW
+    // KREATOR / EDYTOR PODPISÓW
     // ==========================================
     function updateCaptionPreview() {
       const text = document.getElementById('cap-input-text').value.trim() || 'Twój tekst pojawi się tutaj w czasie rzeczywistym...';
@@ -926,6 +1034,39 @@
       previewTag.className = 'tag-badge' + (is18 ? ' is-18' : (isPL ? ' is-pl' : ''));
     }
 
+    // ROZPOCZĘCIE EDYCJI PODPISU
+    function startEditCaption(id) {
+      const cap = db.captions.find(c => c.id === id);
+      if (!cap) return;
+
+      editingCaptionId = id;
+      document.getElementById('cap-input-text').value = cap.text;
+      document.getElementById('cap-input-tag').value = cap.tag;
+
+      document.getElementById('caption-creator-panel').classList.add('editing-mode');
+      document.getElementById('caption-edit-banner').style.display = 'flex';
+      document.getElementById('cap-form-title').innerText = '✏️ Edytuj Wybrany Podpis';
+      document.getElementById('btn-save-cap').innerText = '💾 Zaktualizuj podpis w bazie';
+      document.getElementById('btn-save-cap').className = 'btn btn-warning';
+      document.getElementById('btn-cancel-cap').style.display = 'inline-flex';
+
+      updateCaptionPreview();
+      document.getElementById('caption-creator-panel').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelCaptionEdit() {
+      editingCaptionId = null;
+      document.getElementById('caption-creator-panel').classList.remove('editing-mode');
+      document.getElementById('caption-edit-banner').style.display = 'none';
+      document.getElementById('cap-form-title').innerText = '➕ Stwórz Nową Kartę Podpisu';
+      document.getElementById('btn-save-cap').innerText = '💾 Dodaj do bazy podpisów';
+      document.getElementById('btn-save-cap').className = 'btn btn-primary';
+      document.getElementById('btn-cancel-cap').style.display = 'none';
+
+      document.getElementById('cap-input-text').value = '';
+      updateCaptionPreview();
+    }
+
     function saveCurrentCaption() {
       const text = document.getElementById('cap-input-text').value.trim();
       const tag = document.getElementById('cap-input-tag').value;
@@ -935,23 +1076,40 @@
         return;
       }
 
-      const newCap = {
-        id: 'cap_' + Date.now(),
-        text: text,
-        tag: tag
-      };
+      if (editingCaptionId) {
+        // AKTUALIZACJA ISTNIEJĄCEGO PODPISU
+        const index = db.captions.findIndex(c => c.id === editingCaptionId);
+        if (index !== -1) {
+          db.captions[index] = {
+            ...db.captions[index],
+            text: text,
+            tag: tag
+          };
+          saveToStorage();
+          renderCaptionsList();
+          alert('Podpis został pomyślnie zaktualizowany!');
+          cancelCaptionEdit();
+        }
+      } else {
+        // NOWY PODPIS
+        const newCap = {
+          id: 'cap_' + Date.now(),
+          text: text,
+          tag: tag
+        };
 
-      db.captions.unshift(newCap);
-      saveToStorage();
-      renderCaptionsList();
+        db.captions.unshift(newCap);
+        saveToStorage();
+        renderCaptionsList();
 
-      alert('Dodano nową kartę podpisu!');
-      document.getElementById('cap-input-text').value = '';
-      updateCaptionPreview();
+        alert('Dodano nową kartę podpisu!');
+        cancelCaptionEdit();
+      }
     }
 
     function deleteCaption(id) {
       if (confirm('Czy usunąć ten podpis?')) {
+        if (editingCaptionId === id) cancelCaptionEdit();
         db.captions = db.captions.filter(c => c.id !== id);
         saveToStorage();
         renderCaptionsList();
@@ -967,7 +1125,7 @@
         const is18 = c.tag.includes('18+') || c.tag.includes('Hardcore') || c.tag.includes('Pikantne');
         const isPL = c.tag.includes('Polska');
         return `
-          <div class="item-card">
+          <div class="item-card ${editingCaptionId === c.id ? 'is-editing' : ''}">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span class="tag-badge ${is18 ? 'is-18' : (isPL ? 'is-pl' : '')}">${c.tag}</span>
             </div>
@@ -975,6 +1133,7 @@
               „${c.text}”
             </div>
             <div class="item-card-actions">
+              <button class="btn btn-sm btn-warning" onclick="startEditCaption('${c.id}')">✏️ Edytuj</button>
               <button class="btn btn-sm btn-danger" onclick="deleteCaption('${c.id}')">Usuń</button>
             </div>
           </div>
@@ -986,10 +1145,12 @@
     // RESET BAZY
     // ==========================================
     function openResetModal() {
-      if (confirm('Czy chcesz przywrócić domyślną bazę (60 memów i 120 podpisów)? Twoje własne dodane karty zostaną zresetowane.')) {
+      if (confirm('Czy chcesz przywrócić domyślną bazę (60 memów i 120 podpisów)? Wszelkie Twoje edycje i dodane karty zostaną zresetowane.')) {
         localStorage.removeItem(STORAGE_KEY);
         db = INITIAL_DATA;
         saveToStorage();
+        cancelMemeEdit();
+        cancelCaptionEdit();
         renderMemesList();
         renderCaptionsList();
         alert('Przywrócono bazę fabryczną!');
@@ -1029,7 +1190,6 @@
       let html = '';
 
       // 1. GENEROWANIE ARKUSZY MEMÓW: 15.24 x 10.16 cm
-      // Na arkusz A4 w pionie mieszczą się idealnie 2 karty (układ 1x2)
       if (printMemes && db.memes.length > 0) {
         const memeChunks = chunkArray(db.memes, 2);
         memeChunks.forEach((chunk, pageIdx) => {
@@ -1059,7 +1219,6 @@
       }
 
       // 2. GENEROWANIE ARKUSZY PODPISÓW: 7.62 x 10.16 cm
-      // Na arkusz A4 w pionie mieszczą się idealnie 4 karty (układ 2x2: 2 * 7.62 = 15.24 cm szer., 2 * 10.16 = 20.32 cm wys.)
       if (printCaptions && db.captions.length > 0) {
         const capChunks = chunkArray(db.captions, 4);
         capChunks.forEach((chunk, pageIdx) => {
@@ -1101,13 +1260,11 @@
 
       printArea.innerHTML = html;
 
-      // Wywołanie drukowania po załadowaniu zasobów
       setTimeout(() => {
         window.print();
       }, 350);
     }
 
-    // INICJALIZACJA PRZY STARCIE
     window.addEventListener('DOMContentLoaded', () => {
       initDatabase();
       updateCaptionPreview();
