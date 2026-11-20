@@ -184,7 +184,7 @@
       color: #000;
       font-size: 0.8rem;
       font-weight: 800;
-      padding: 4px 12px;
+      padding: 6px 12px;
       border-radius: 4px;
       margin-bottom: 12px;
       align-items: center;
@@ -323,16 +323,16 @@
       overflow: hidden;
       position: relative;
       box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       cursor: grab;
+      user-select: none;
     }
     .card-meme-preview-container:active {
       cursor: grabbing;
     }
     .card-meme-img {
       position: absolute;
+      top: 50%;
+      left: 50%;
       transform-origin: center center;
       pointer-events: none;
       user-select: none;
@@ -352,6 +352,7 @@
       letter-spacing: 0.5px;
       border: 1px solid rgba(255,255,255,0.2);
       pointer-events: none;
+      z-index: 5;
     }
 
     /* TRANSFORM CONTROLS */
@@ -398,12 +399,35 @@
       border-color: #666;
       transform: translateY(-2px);
     }
+    .item-card.is-editing {
+      border: 2px solid #ff9800;
+      box-shadow: 0 0 12px rgba(255, 152, 0, 0.3);
+    }
     .item-card-actions {
       display: flex;
       justify-content: flex-end;
       gap: 6px;
       border-top: 1px solid var(--border);
       padding-top: 8px;
+    }
+
+    /* MINIATURKA MEMA W LIŚCIE: 15.24 x 10.16 cm (proporcja 3:2) */
+    .meme-thumb-box {
+      width: 100%;
+      height: 170px;
+      background: #000;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .meme-thumb-img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: center center;
+      pointer-events: none;
+      max-width: none;
+      max-height: none;
     }
 
     /* PRINT MODAL & HIDDEN PRINT AREA */
@@ -432,7 +456,7 @@
       gap: 16px;
     }
 
-    /* PRINT STYLES - Dedykowany druk arkuszy A4 z dokładnymi wymiarami */
+    /* PRINT STYLES - Dedykowany druk arkuszy A4 z DOKŁADNYMI wymiarami */
     @media print {
       @page {
         size: A4 portrait;
@@ -487,6 +511,7 @@
         margin-top: 3mm;
       }
 
+      /* KARTY Z TEKSTEM: 7.62 cm x 10.16 cm */
       .caption-sheet-grid {
         display: grid;
         grid-template-columns: 76.2mm 76.2mm;
@@ -513,6 +538,7 @@
         border: 2.5px solid #d62246;
       }
 
+      /* KARTY Z MEMAMI: 15.24 cm x 10.16 cm (152.4mm x 101.6mm) */
       .meme-sheet-grid {
         display: grid;
         grid-template-columns: 152.4mm;
@@ -532,9 +558,12 @@
         background: #000;
         box-sizing: border-box;
       }
-      .meme-print-card img {
+      .meme-print-img {
         position: absolute;
+        top: 50%;
+        left: 50%;
         transform-origin: center center;
+        pointer-events: none;
       }
     }
   </style>
@@ -583,29 +612,35 @@
             <input type="text" id="meme-input-name" class="form-control" placeholder="np. Mój własny mem">
           </div>
           <div class="form-group">
-            <label>Zmień / wybierz zdjęcie z dysku:</label>
+            <label>Wybierz / podmień zdjęcie z dysku:</label>
             <input type="file" id="meme-file-input" class="form-control" accept="image/*" onchange="handleMemeFileUpload(event)">
           </div>
 
           <!-- KONTROLKI PRZYBLIŻENIA I OBROTU -->
-          <div style="background: #151518; padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 14px;">
-            <div class="form-group" style="margin-bottom: 8px;">
-              <label>🔍 Przybliżenie (Zoom): <span id="val-zoom">100%</span></label>
+          <div style="background: #151518; padding: 14px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 14px;">
+            <div class="form-group" style="margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="margin: 0;">🔍 Przybliżenie (Zoom):</label>
+                <strong id="val-zoom" style="color: var(--primary);">100%</strong>
+              </div>
               <div class="control-row">
-                <input type="range" id="meme-zoom" min="0.2" max="3" step="0.05" value="1" oninput="updateMemeTransform()">
+                <input type="range" id="meme-zoom" min="0.2" max="3.5" step="0.05" value="1" oninput="updateMemeTransform()">
               </div>
             </div>
-            <div class="form-group" style="margin-bottom: 8px;">
-              <label>🔄 Obrót (Kąt): <span id="val-rotate">0°</span></label>
+            <div class="form-group" style="margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="margin: 0;">🔄 Obrót (Kąt):</label>
+                <strong id="val-rotate" style="color: #ff9800;">0°</strong>
+              </div>
               <div class="control-row">
                 <button class="btn btn-sm" onclick="rotateMeme(-90)">-90°</button>
                 <input type="range" id="meme-rotate" min="-180" max="180" step="5" value="0" oninput="updateMemeTransform()">
                 <button class="btn btn-sm" onclick="rotateMeme(90)">+90°</button>
-                <button class="btn btn-sm" onclick="resetMemeTransform()">Reset</button>
+                <button class="btn btn-sm" onclick="resetMemeTransform()">Centruj</button>
               </div>
             </div>
-            <p style="font-size: 0.75rem; color: var(--text-muted);">
-              💡 <em>Wskazówka: Możesz również chwycić zdjęcie myszką i przesunąć je w oknie podglądu!</em>
+            <p style="font-size: 0.78rem; color: #aaa; margin-top: 6px; line-height: 1.4;">
+              💡 <em>Chwyć zdjęcie lewym przyciskiem myszy w oknie podglądu i przesuń je, aby idealnie wykadrować!</em>
             </p>
           </div>
 
@@ -615,12 +650,12 @@
           </div>
         </div>
 
-        <!-- PODGLĄD W WYMIARACH 15.24 x 10.16 cm -->
+        <!-- PODGLĄD W WYMIARACH 15.24 x 10.16 cm (330px x 220px) -->
         <div class="preview-box">
-          <div class="preview-title">Format szablonu: 15,24 × 10,16 cm</div>
+          <div class="preview-title">Szablon karty: 15,24 × 10,16 cm</div>
           <div class="card-meme-preview-container" id="meme-preview-box" onmousedown="startDrag(event)">
-            <img id="meme-preview-img" class="card-meme-img" src="" alt="Podgląd" style="display: none;">
-            <div id="meme-empty-placeholder" style="color: #666; font-size: 0.85rem; text-align: center; padding: 20px;">
+            <img id="meme-preview-img" class="card-meme-img" src="" alt="Podgląd" style="display: none;" onload="onPreviewImgLoaded(this)">
+            <div id="meme-empty-placeholder" style="color: #666; font-size: 0.85rem; text-align: center; padding: 20px; position: absolute; top: 40%;">
               Wybierz zdjęcie, aby rozpocząć kadrowanie
             </div>
             <div class="card-meme-badge" id="meme-preview-badge">#MEME</div>
@@ -703,7 +738,7 @@
     <div class="modal-content">
       <h2 style="font-size: 1.2rem;">🖨️ Drukuj / Eksportuj do PDF</h2>
       <p style="font-size: 0.85rem; color: var(--text-muted);">
-        Wybierz, które karty chcesz przygotować do druku na arkuszach A4. System zachowa precyzyjne proporcje:
+        Wybierz, które karty chcesz przygotować do druku na arkuszach A4. System zachowa precyzyjne proporcje i wykadrowania:
       </p>
       <div style="background: #141416; border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 0.85rem;">
         <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
@@ -737,12 +772,15 @@
   <script>
     const STORAGE_KEY = 'what_do_you_meme_db_v1';
 
+    // Stałe wymiary kontenera podglądu w edytorze
+    const PREVIEW_WIDTH = 330;
+    const PREVIEW_HEIGHT = 220;
+
     let db = {
       memes: [],
       captions: []
     };
 
-    // ID edytowanych elementów (null = tryb tworzenia)
     let editingMemeId = null;
     let editingCaptionId = null;
 
@@ -796,7 +834,9 @@
       scale: 1,
       rotate: 0,
       offsetX: 0,
-      offsetY: 0
+      offsetY: 0,
+      baseWidth: PREVIEW_WIDTH,
+      baseHeight: PREVIEW_HEIGHT
     };
 
     let isDragging = false;
@@ -815,6 +855,31 @@
         resetMemeTransform();
       };
       reader.readAsDataURL(file);
+    }
+
+    // Po załadowaniu grafiki obliczamy jej domyślny rozmiar "cover" w oknie 330x220
+    function onPreviewImgLoaded(img) {
+      if (!img.naturalWidth || !img.naturalHeight) return;
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
+
+      // Oblicz rozmiar tak, aby obraz w 100% wypełniał kadr 330x220 (cover)
+      const rCont = PREVIEW_WIDTH / PREVIEW_HEIGHT;
+      const rImg = nw / nh;
+
+      let bw, bh;
+      if (rImg > rCont) {
+        bh = PREVIEW_HEIGHT;
+        bw = PREVIEW_HEIGHT * rImg;
+      } else {
+        bw = PREVIEW_WIDTH;
+        bh = PREVIEW_WIDTH / rImg;
+      }
+
+      currentMemeState.baseWidth = Math.round(bw);
+      currentMemeState.baseHeight = Math.round(bh);
+
+      applyMemeTransform();
     }
 
     function updateMemeTransform() {
@@ -857,7 +922,10 @@
         img.src = currentMemeState.dataUrl;
         img.style.display = 'block';
         placeholder.style.display = 'none';
-        img.style.transform = `translate(${currentMemeState.offsetX}px, ${currentMemeState.offsetY}px) rotate(${currentMemeState.rotate}deg) scale(${currentMemeState.scale})`;
+
+        img.style.width = (currentMemeState.baseWidth || PREVIEW_WIDTH) + 'px';
+        img.style.height = (currentMemeState.baseHeight || PREVIEW_HEIGHT) + 'px';
+        img.style.transform = `translate(calc(-50% + ${currentMemeState.offsetX}px), calc(-50% + ${currentMemeState.offsetY}px)) rotate(${currentMemeState.rotate}deg) scale(${currentMemeState.scale})`;
       } else {
         img.style.display = 'none';
         placeholder.style.display = 'block';
@@ -894,12 +962,13 @@
       editingMemeId = id;
       currentMemeState.dataUrl = meme.dataUrl;
       currentMemeState.name = meme.name;
-      currentMemeState.scale = meme.scale || 1;
-      currentMemeState.rotate = meme.rotate || 0;
-      currentMemeState.offsetX = meme.offsetX || 0;
-      currentMemeState.offsetY = meme.offsetY || 0;
+      currentMemeState.scale = meme.scale !== undefined ? meme.scale : 1;
+      currentMemeState.rotate = meme.rotate !== undefined ? meme.rotate : 0;
+      currentMemeState.offsetX = meme.offsetX !== undefined ? meme.offsetX : 0;
+      currentMemeState.offsetY = meme.offsetY !== undefined ? meme.offsetY : 0;
+      currentMemeState.baseWidth = meme.baseWidth || PREVIEW_WIDTH;
+      currentMemeState.baseHeight = meme.baseHeight || PREVIEW_HEIGHT;
 
-      // Wypełnienie formularza
       document.getElementById('meme-input-name').value = meme.name;
       document.getElementById('meme-zoom').value = currentMemeState.scale;
       document.getElementById('meme-rotate').value = currentMemeState.rotate;
@@ -907,7 +976,6 @@
       document.getElementById('val-rotate').innerText = currentMemeState.rotate + '°';
       document.getElementById('meme-preview-badge').innerText = meme.name.toUpperCase();
 
-      // UI edycji
       document.getElementById('meme-creator-panel').classList.add('editing-mode');
       document.getElementById('meme-edit-banner').style.display = 'flex';
       document.getElementById('meme-editing-name-label').innerText = meme.name;
@@ -917,8 +985,8 @@
       document.getElementById('btn-cancel-meme').style.display = 'inline-flex';
 
       applyMemeTransform();
+      renderMemesList();
 
-      // Przewiń do góry do panelu edycji
       document.getElementById('meme-creator-panel').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -935,6 +1003,7 @@
       document.getElementById('meme-file-input').value = '';
       currentMemeState.dataUrl = null;
       resetMemeTransform();
+      renderMemesList();
     }
 
     function saveCurrentMeme() {
@@ -945,7 +1014,7 @@
       const name = document.getElementById('meme-input-name').value.trim() || 'Bez nazwy';
 
       if (editingMemeId) {
-        // AKTUALIZACJA ISTNIEJĄCEGO MEMA
+        // AKTUALIZACJA ISTNIEJĄCEGO MEMA W BAZIE
         const index = db.memes.findIndex(m => m.id === editingMemeId);
         if (index !== -1) {
           db.memes[index] = {
@@ -955,11 +1024,13 @@
             scale: currentMemeState.scale,
             rotate: currentMemeState.rotate,
             offsetX: currentMemeState.offsetX,
-            offsetY: currentMemeState.offsetY
+            offsetY: currentMemeState.offsetY,
+            baseWidth: currentMemeState.baseWidth,
+            baseHeight: currentMemeState.baseHeight
           };
           saveToStorage();
           renderMemesList();
-          alert(`Zaktualizowano mema: „${name}”!`);
+          alert(`Zaktualizowano mema: „${name}”! Nowe wykadrowanie zostało zapisane.`);
           cancelMemeEdit();
         }
       } else {
@@ -971,7 +1042,9 @@
           scale: currentMemeState.scale,
           rotate: currentMemeState.rotate,
           offsetX: currentMemeState.offsetX,
-          offsetY: currentMemeState.offsetY
+          offsetY: currentMemeState.offsetY,
+          baseWidth: currentMemeState.baseWidth,
+          baseHeight: currentMemeState.baseHeight
         };
 
         db.memes.unshift(newMeme);
@@ -992,25 +1065,44 @@
       }
     }
 
+    // RENDER LISTY MEMÓW (Używa dokładnie takich samych proporcji i przekształceń jak edytor!)
     function renderMemesList() {
       const grid = document.getElementById('memes-grid');
       const search = (document.getElementById('memes-search').value || '').toLowerCase();
       const filtered = db.memes.filter(m => m.name.toLowerCase().includes(search));
 
-      grid.innerHTML = filtered.map(m => `
-        <div class="item-card ${editingMemeId === m.id ? 'is-editing' : ''}">
-          <div style="width: 100%; height: 160px; background: #000; border-radius: 6px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;">
-            <img src="${m.dataUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain; transform: translate(${m.offsetX || 0}px, ${m.offsetY || 0}px) rotate(${m.rotate || 0}deg) scale(${m.scale || 1});" alt="${m.name}">
+      // Współczynnik skali miniaturki w liście względem edytora
+      // Szerokość w edytorze: 330px, w miniaturce na liście: np. ok. 260px (obliczamy ratio)
+      grid.innerHTML = filtered.map(m => {
+        const bw = m.baseWidth || PREVIEW_WIDTH;
+        const bh = m.baseHeight || PREVIEW_HEIGHT;
+        const scale = m.scale !== undefined ? m.scale : 1;
+        const rotate = m.rotate !== undefined ? m.rotate : 0;
+        const ox = m.offsetX !== undefined ? m.offsetX : 0;
+        const oy = m.offsetY !== undefined ? m.offsetY : 0;
+
+        // Ratio miniaturki (wysokość 170px vs 220px w edytorze = 170 / 220 = 0.7727)
+        const ratio = 170 / 220;
+        const thumbW = Math.round(bw * ratio);
+        const thumbH = Math.round(bh * ratio);
+        const thumbOx = Math.round(ox * ratio);
+        const thumbOy = Math.round(oy * ratio);
+
+        return `
+          <div class="item-card ${editingMemeId === m.id ? 'is-editing' : ''}">
+            <div class="meme-thumb-box">
+              <img src="${m.dataUrl}" class="meme-thumb-img" style="width: ${thumbW}px; height: ${thumbH}px; transform: translate(calc(-50% + ${thumbOx}px), calc(-50% + ${thumbOy}px)) rotate(${rotate}deg) scale(${scale});" alt="${m.name}">
+            </div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ${m.name}
+            </div>
+            <div class="item-card-actions">
+              <button class="btn btn-sm btn-warning" onclick="startEditMeme('${m.id}')">✏️ Edytuj</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteMeme('${m.id}')">Usuń</button>
+            </div>
           </div>
-          <div style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            ${m.name}
-          </div>
-          <div class="item-card-actions">
-            <button class="btn btn-sm btn-warning" onclick="startEditMeme('${m.id}')">✏️ Edytuj</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteMeme('${m.id}')">Usuń</button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     // ==========================================
@@ -1034,7 +1126,6 @@
       previewTag.className = 'tag-badge' + (is18 ? ' is-18' : (isPL ? ' is-pl' : ''));
     }
 
-    // ROZPOCZĘCIE EDYCJI PODPISU
     function startEditCaption(id) {
       const cap = db.captions.find(c => c.id === id);
       if (!cap) return;
@@ -1051,6 +1142,7 @@
       document.getElementById('btn-cancel-cap').style.display = 'inline-flex';
 
       updateCaptionPreview();
+      renderCaptionsList();
       document.getElementById('caption-creator-panel').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -1065,6 +1157,7 @@
 
       document.getElementById('cap-input-text').value = '';
       updateCaptionPreview();
+      renderCaptionsList();
     }
 
     function saveCurrentCaption() {
@@ -1077,7 +1170,6 @@
       }
 
       if (editingCaptionId) {
-        // AKTUALIZACJA ISTNIEJĄCEGO PODPISU
         const index = db.captions.findIndex(c => c.id === editingCaptionId);
         if (index !== -1) {
           db.captions[index] = {
@@ -1091,7 +1183,6 @@
           cancelCaptionEdit();
         }
       } else {
-        // NOWY PODPIS
         const newCap = {
           id: 'cap_' + Date.now(),
           text: text,
@@ -1189,7 +1280,8 @@
 
       let html = '';
 
-      // 1. GENEROWANIE ARKUSZY MEMÓW: 15.24 x 10.16 cm
+      // 1. GENEROWANIE ARKUSZY MEMÓW: Dokładnie 15.24 x 10.16 cm (152.4mm x 101.6mm)
+      // Obliczamy współczynnik skali z podglądu (330px = 152.4mm, więc mnożnik wynosi 152.4 / 330 = 0.4618mm na pixel)
       if (printMemes && db.memes.length > 0) {
         const memeChunks = chunkArray(db.memes, 2);
         memeChunks.forEach((chunk, pageIdx) => {
@@ -1202,9 +1294,22 @@
               <div class="meme-sheet-grid">
           `;
           chunk.forEach(m => {
+            const bw = m.baseWidth || PREVIEW_WIDTH;
+            const bh = m.baseHeight || PREVIEW_HEIGHT;
+            const scale = m.scale !== undefined ? m.scale : 1;
+            const rotate = m.rotate !== undefined ? m.rotate : 0;
+            const ox = m.offsetX !== undefined ? m.offsetX : 0;
+            const oy = m.offsetY !== undefined ? m.offsetY : 0;
+
+            const printMmRatio = 152.4 / PREVIEW_WIDTH; // ~0.4618 mm / px
+            const pW = (bw * printMmRatio).toFixed(2);
+            const pH = (bh * printMmRatio).toFixed(2);
+            const pOx = (ox * printMmRatio).toFixed(2);
+            const pOy = (oy * printMmRatio).toFixed(2);
+
             html += `
               <div class="meme-print-card">
-                <img src="${m.dataUrl}" style="width: 100%; height: 100%; object-fit: cover; transform: translate(${m.offsetX || 0}px, ${m.offsetY || 0}px) rotate(${m.rotate || 0}deg) scale(${m.scale || 1});" alt="${m.name}">
+                <img src="${m.dataUrl}" class="meme-print-img" style="width: ${pW}mm; height: ${pH}mm; transform: translate(calc(-50% + ${pOx}mm), calc(-50% + ${pOy}mm)) rotate(${rotate}deg) scale(${scale});" alt="${m.name}">
               </div>
             `;
           });
@@ -1218,7 +1323,7 @@
         });
       }
 
-      // 2. GENEROWANIE ARKUSZY PODPISÓW: 7.62 x 10.16 cm
+      // 2. GENEROWANIE ARKUSZY PODPISÓW: 7.62 x 10.16 cm (76.2mm x 101.6mm)
       if (printCaptions && db.captions.length > 0) {
         const capChunks = chunkArray(db.captions, 4);
         capChunks.forEach((chunk, pageIdx) => {
