@@ -513,6 +513,7 @@
         margin-top: 3mm;
       }
 
+      /* KARTY Z TEKSTEM: 7.62 cm x 10.16 cm */
       .caption-sheet-grid {
         display: grid;
         grid-template-columns: 76.2mm 76.2mm;
@@ -539,6 +540,7 @@
         border: 2.5px solid #d62246;
       }
 
+      /* KARTY Z MEMAMI: 15.24 cm x 10.16 cm (152.4mm x 101.6mm) */
       .meme-sheet-grid {
         display: grid;
         grid-template-columns: 152.4mm;
@@ -576,7 +578,7 @@
       <h1>WHAT DO YOU MEME? <span class="logo-badge">Studio Kart</span></h1>
     </div>
     <div class="header-actions">
-      <button class="btn" onclick="openResetModal()">🔄 Zresetuj do bazy</button>
+      <button class="btn" onclick="openResetModal()">🔄 Zresetuj do bazy fabrycznej</button>
       <button class="btn btn-primary" onclick="openPrintModal()">🖨️ Drukuj / Zapisz do PDF</button>
     </div>
   </header>
@@ -768,11 +770,12 @@
   <!-- ŁADOWANIE BAZY POCZĄTKOWEJ -->
   <script src="initial_data.js"></script>
 
-  <!-- LOGIKA APLIKACJI -->
+  <!-- LOGIKA APLIKACJI Z TRWAŁĄ BAZĄ DANYCH INDEXEDDB (BEZ LIMITU 5MB) -->
   <script>
-    const STORAGE_KEY = 'what_do_you_meme_db_v2'; // Nowy klucz storage dla uaktualnionej geometrii
+    const DB_NAME = 'WhatDoYouMemeDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'app_state';
 
-    // Stałe wymiary kontenera podglądu w edytorze (proporcja 15.24 x 10.16 cm)
     const PREVIEW_WIDTH = 330;
     const PREVIEW_HEIGHT = 220;
 
@@ -781,34 +784,87 @@
       captions: []
     };
 
+    let idb = null;
     let editingMemeId = null;
     let editingCaptionId = null;
 
-    function initDatabase() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
+    // INICJALIZACJA INDEXEDDB (Brak limitu danych, trwały zapis w przeglądarce)
+    function openIDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = function(e) {
+          const dbInstance = e.target.result;
+          if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
+            dbInstance.createObjectStore(STORE_NAME);
+          }
+        };
+        req.onsuccess = function(e) {
+          idb = e.target.result;
+          resolve(idb);
+        };
+        req.onerror = function(e) {
+          console.error('IndexedDB open error:', e);
+          reject(e);
+        };
+      });
+    }
+
+    async function loadStateFromIDB() {
+      return new Promise((resolve) => {
         try {
-          db = JSON.parse(saved);
+          const tx = idb.transaction(STORE_NAME, 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.get('current_state');
+          req.onsuccess = function() {
+            resolve(req.result || null);
+          };
+          req.onerror = function() {
+            resolve(null);
+          };
         } catch (e) {
-          console.error('Błąd parsowania bazy:', e);
-          db = INITIAL_DATA;
+          resolve(null);
         }
-      } else if (typeof INITIAL_DATA !== 'undefined') {
-        db = INITIAL_DATA;
+      });
+    }
+
+    async function saveStateToIDB() {
+      return new Promise((resolve) => {
+        try {
+          const tx = idb.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          store.put(db, 'current_state');
+          tx.oncomplete = function() {
+            updateCounts();
+            resolve(true);
+          };
+          tx.onerror = function(e) {
+            console.error('Błąd zapisu do IndexedDB:', e);
+            resolve(false);
+          };
+        } catch (e) {
+          console.error('Exception save IDB:', e);
+          resolve(false);
+        }
+      });
+    }
+
+    async function initDatabase() {
+      try {
+        await openIDB();
+        const saved = await loadStateFromIDB();
+        if (saved && saved.memes && saved.memes.length > 0) {
+          db = saved;
+        } else if (typeof INITIAL_DATA !== 'undefined') {
+          db = INITIAL_DATA;
+          await saveStateToIDB();
+        }
+      } catch (err) {
+        console.warn('Fallback do pamięci:', err);
+        if (typeof INITIAL_DATA !== 'undefined') db = INITIAL_DATA;
       }
-      saveToStorage();
       updateCounts();
       renderMemesList();
       renderCaptionsList();
-    }
-
-    function saveToStorage() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-      } catch (e) {
-        console.warn('LocalStorage limit przekroczony (dużo zdjęć base64), działanie w RAM');
-      }
-      updateCounts();
     }
 
     function updateCounts() {
@@ -1003,7 +1059,7 @@
       renderMemesList();
     }
 
-    function saveCurrentMeme() {
+    async function saveCurrentMeme() {
       if (!currentMemeState.dataUrl) {
         alert('Proszę najpierw wgrać zdjęcie mema!');
         return;
@@ -1024,9 +1080,9 @@
             baseWidth: currentMemeState.baseWidth,
             baseHeight: currentMemeState.baseHeight
           };
-          saveToStorage();
+          await saveStateToIDB();
           renderMemesList();
-          alert(`Zaktualizowano mema: „${name}”!`);
+          alert(`Zaktualizowano i trwale zapisano mema: „${name}”!`);
           cancelMemeEdit();
         }
       } else {
@@ -1043,7 +1099,7 @@
         };
 
         db.memes.unshift(newMeme);
-        saveToStorage();
+        await saveStateToIDB();
         renderMemesList();
 
         alert(`Dodano pomyślnie mema: „${name}”!`);
@@ -1051,16 +1107,15 @@
       }
     }
 
-    function deleteMeme(id) {
+    async function deleteMeme(id) {
       if (confirm('Czy na pewno chcesz usunąć tego mema z bazy?')) {
         if (editingMemeId === id) cancelMemeEdit();
         db.memes = db.memes.filter(m => m.id !== id);
-        saveToStorage();
+        await saveStateToIDB();
         renderMemesList();
       }
     }
 
-    // RENDER LISTY MEMÓW (Format 330px x 220px w proporcji 1:1 z oknem edycji i z wydrukiem)
     function renderMemesList() {
       const grid = document.getElementById('memes-grid');
       const search = (document.getElementById('memes-search').value || '').toLowerCase();
@@ -1146,7 +1201,7 @@
       renderCaptionsList();
     }
 
-    function saveCurrentCaption() {
+    async function saveCurrentCaption() {
       const text = document.getElementById('cap-input-text').value.trim();
       const tag = document.getElementById('cap-input-tag').value;
 
@@ -1163,9 +1218,9 @@
             text: text,
             tag: tag
           };
-          saveToStorage();
+          await saveStateToIDB();
           renderCaptionsList();
-          alert('Podpis został pomyślnie zaktualizowany!');
+          alert('Podpis został pomyślnie zaktualizowany i zapisany!');
           cancelCaptionEdit();
         }
       } else {
@@ -1176,7 +1231,7 @@
         };
 
         db.captions.unshift(newCap);
-        saveToStorage();
+        await saveStateToIDB();
         renderCaptionsList();
 
         alert('Dodano nową kartę podpisu!');
@@ -1184,11 +1239,11 @@
       }
     }
 
-    function deleteCaption(id) {
+    async function deleteCaption(id) {
       if (confirm('Czy usunąć ten podpis?')) {
         if (editingCaptionId === id) cancelCaptionEdit();
         db.captions = db.captions.filter(c => c.id !== id);
-        saveToStorage();
+        await saveStateToIDB();
         renderCaptionsList();
       }
     }
@@ -1219,13 +1274,12 @@
     }
 
     // ==========================================
-    // RESET BAZY
+    // RESET BAZY DO FABRYCZNEJ
     // ==========================================
-    function openResetModal() {
-      if (confirm('Czy chcesz przywrócić domyślną bazę (60 memów i 120 podpisów)? Wszelkie Twoje edycje i dodane karty zostaną zresetowane.')) {
-        localStorage.removeItem(STORAGE_KEY);
+    async function openResetModal() {
+      if (confirm('Czy chcesz przywrócić domyślną bazę (60 memów i 120 podpisów)? Wszelkie Twoje edycje i dodane karty zostaną zastąpione fabrycznymi.')) {
         db = INITIAL_DATA;
-        saveToStorage();
+        await saveStateToIDB();
         cancelMemeEdit();
         cancelCaptionEdit();
         renderMemesList();
